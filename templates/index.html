@@ -201,6 +201,47 @@
             margin-top: 8px;
         }
 
+        .metrics {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .metric-label {
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            color: #533f03;
+            font-family: 'Courier New', monospace;
+        }
+
+        .summary-metrics {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #0c5460;
+        }
+
+        .summary-title {
+            font-weight: 600;
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+
         .final-answer {
             background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
             border: 2px solid #667eea;
@@ -365,6 +406,27 @@
                 traceItem.className = 'trace-item';
 
                 if (item.type === 'tool_call') {
+                    const metricsHtml = item.llm_metrics ? `
+                        <div class="metrics">
+                            <div class="metric">
+                                <span class="metric-label">LLM Tokens:</span>
+                                <span class="metric-value">${item.llm_metrics.total_tokens}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">LLM Time:</span>
+                                <span class="metric-value">${item.llm_metrics.total_duration_ms}ms</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Tool Time:</span>
+                                <span class="metric-value">${item.tool_duration_ms}ms</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Model:</span>
+                                <span class="metric-value">${item.llm_metrics.model}</span>
+                            </div>
+                        </div>
+                    ` : '';
+
                     traceItem.innerHTML = `
                         <span class="iteration-badge">Step ${item.iteration}</span>
                         <div class="tool-call">
@@ -375,14 +437,36 @@
                             <div class="tool-result">
                                 Result: ${JSON.stringify(item.result, null, 2)}
                             </div>
+                            ${metricsHtml}
                         </div>
                     `;
                 } else if (item.type === 'final_answer') {
+                    const summaryHtml = item.summary ? `
+                        <div class="summary-metrics">
+                            <div class="summary-title">📊 Execution Summary</div>
+                            <div class="metrics">
+                                <div class="metric">
+                                    <span class="metric-label">Total Tokens:</span>
+                                    <span class="metric-value">${item.summary.total_tokens}</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Total Time:</span>
+                                    <span class="metric-value">${item.summary.total_time_ms}ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Model:</span>
+                                    <span class="metric-value">${item.summary.model}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : '';
+
                     traceItem.innerHTML = `
                         <span class="iteration-badge">Step ${item.iteration}</span>
                         <div class="final-answer">
                             <div class="final-answer-label">✅ Final Answer</div>
                             <div class="final-answer-content">${formatText(item.content)}</div>
+                            ${summaryHtml}
                         </div>
                     `;
                 }

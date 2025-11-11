@@ -42,10 +42,18 @@ echo "✅ Setup complete!"
 echo ""
 echo "🌐 Web UI: http://localhost:8000"
 echo ""
-echo "Press Ctrl+C to stop"
+echo "Containers running in background."
+echo ""
+echo "Useful commands:"
+echo "  docker compose -f docker-compose-simple.yml logs -f web    # View logs"
+echo "  docker compose -f docker-compose-simple.yml ps             # Check status"
+echo "  docker compose -f docker-compose-simple.yml down           # Stop"
 echo "======================================="
 echo ""
 
-# Show logs
-docker compose -f docker-compose-simple.yml logs -f web
+# Open browser automatically (optional)
+if command -v open &> /dev/null; then
+    sleep 2
+    open http://localhost:8000
+fi
 

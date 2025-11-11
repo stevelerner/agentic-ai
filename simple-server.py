@@ -115,8 +115,8 @@ class SimpleAgent:
         self.ollama_host = ollama_host
         self.model = "llama3.1"
         
-    def call_ollama(self, messages: list) -> str:
-        """Call Ollama API to get LLM response."""
+    def call_ollama(self, messages: list) -> tuple:
+        """Call Ollama API to get LLM response. Returns (content, metrics)."""
         try:
             response = requests.post(
                 f"{self.ollama_host}/api/chat",
@@ -129,9 +129,21 @@ class SimpleAgent:
                 timeout=60
             )
             response.raise_for_status()
-            return response.json()["message"]["content"]
+            data = response.json()
+            
+            # Extract metrics
+            metrics = {
+                "model": data.get("model", self.model),
+                "prompt_tokens": data.get("prompt_eval_count", 0),
+                "completion_tokens": data.get("eval_count", 0),
+                "total_tokens": data.get("prompt_eval_count", 0) + data.get("eval_count", 0),
+                "eval_duration_ms": round(data.get("eval_duration", 0) / 1_000_000, 2),
+                "total_duration_ms": round(data.get("total_duration", 0) / 1_000_000, 2),
+            }
+            
+            return data["message"]["content"], metrics
         except Exception as e:
-            return f"Error calling Ollama: {e}"
+            return f"Error calling Ollama: {e}", {}
     
     def parse_tool_call(self, text: str) -> Optional[tuple]:
         """Extract tool call from LLM response."""
@@ -165,7 +177,7 @@ class SimpleAgent:
     
     def run(self, user_query: str, max_iterations: int = 5) -> List[Dict]:
         """
-        Run agent with ReAct pattern, returning step-by-step trace.
+        Run agent with ReAct pattern, returning step-by-step trace with metrics.
         """
         system_prompt = """You are a helpful AI assistant specializing in language tasks.
 
@@ -188,10 +200,14 @@ Think step by step and use tools when helpful."""
         ]
         
         trace = []
+        total_tokens = 0
+        total_time_ms = 0
         
         for iteration in range(1, max_iterations + 1):
-            # REASONING: Get LLM response
-            response = self.call_ollama(messages)
+            # REASONING: Get LLM response with metrics
+            response, metrics = self.call_ollama(messages)
+            total_tokens += metrics.get("total_tokens", 0)
+            total_time_ms += metrics.get("total_duration_ms", 0)
             
             # Check if it's a tool call
             tool_call = self.parse_tool_call(response)
@@ -199,14 +215,18 @@ Think step by step and use tools when helpful."""
             if tool_call:
                 # ACTING: Execute the tool
                 tool_name, arguments = tool_call
+                tool_start = time.time()
                 result = self.execute_tool(tool_name, arguments)
+                tool_duration_ms = round((time.time() - tool_start) * 1000, 2)
                 
                 trace.append({
                     "type": "tool_call",
                     "iteration": iteration,
                     "tool": tool_name,
                     "arguments": arguments,
-                    "result": result
+                    "result": result,
+                    "llm_metrics": metrics,
+                    "tool_duration_ms": tool_duration_ms
                 })
                 
                 # OBSERVING: Add tool result to conversation
@@ -221,7 +241,13 @@ Think step by step and use tools when helpful."""
                 trace.append({
                     "type": "final_answer",
                     "iteration": iteration,
-                    "content": response
+                    "content": response,
+                    "llm_metrics": metrics,
+                    "summary": {
+                        "total_tokens": total_tokens,
+                        "total_time_ms": round(total_time_ms, 2),
+                        "model": self.model
+                    }
                 })
                 return trace
         
@@ -229,7 +255,12 @@ Think step by step and use tools when helpful."""
         trace.append({
             "type": "final_answer",
             "iteration": max_iterations,
-            "content": "Maximum iterations reached."
+            "content": "Maximum iterations reached.",
+            "summary": {
+                "total_tokens": total_tokens,
+                "total_time_ms": round(total_time_ms, 2),
+                "model": self.model
+            }
         })
         return trace
 

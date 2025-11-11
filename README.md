@@ -67,7 +67,7 @@ open http://localhost:8000
 
 ## Example Interaction
 
-In the beautiful web interface, try:
+In the web interface, try:
 
 **Query:** "Translate 'Hello, how are you?' to Spanish"
 
@@ -245,12 +245,13 @@ class SimpleAgent:
 ## Files
 
 - `simple-server.py` - Agent + web server (250 lines)
-- `templates/index.html` - Beautiful web UI
+- `templates/index.html` - Web UI with metrics display
 - `docker-compose-simple.yml` - Ollama + Web containers
 - `Dockerfile.simple` - Web service container
 - `simple-requirements.txt` - Minimal dependencies
 - `SIMPLE-README.md` - Detailed documentation
 - `run-simple.sh` - One-command setup
+- `cleanup-simple.sh` - Safe cleanup script
 
 ## Example Tasks to Try
 
@@ -308,13 +309,19 @@ docker compose -f docker-compose-simple.yml logs web
 
 ## Cleanup
 
-To stop the demo (keeps Ollama image and model for next time):
+**Quick cleanup** (keeps Ollama and model):
+
+```bash
+./cleanup-simple.sh
+```
+
+**Manual cleanup** (same as script):
 
 ```bash
 docker compose -f docker-compose-simple.yml down
 ```
 
-To completely remove everything (including model - will need to re-download):
+**Nuclear cleanup** (removes everything including model):
 
 ```bash
 docker compose -f docker-compose-simple.yml down -v
