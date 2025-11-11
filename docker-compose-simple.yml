@@ -15,7 +15,7 @@ services:
       dockerfile: Dockerfile.simple
     container_name: simple-web
     ports:
-      - "5000:5000"
+      - "8000:5000"
     volumes:
       - ./outputs:/app/outputs
     depends_on:

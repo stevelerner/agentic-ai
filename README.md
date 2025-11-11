@@ -50,7 +50,7 @@ cd /Volumes/external/code/agentic-ai
 ./run-simple.sh
 ```
 
-Then open your browser to: **http://localhost:5000**
+Then open your browser to: **http://localhost:8000**
 
 Or step by step:
 
@@ -62,7 +62,7 @@ docker compose -f docker-compose-simple.yml up -d --build
 docker exec simple-ollama ollama pull llama3.1
 
 # 3. Open browser
-open http://localhost:5000
+open http://localhost:8000
 ```
 
 ## Example Interaction
@@ -254,7 +254,7 @@ class SimpleAgent:
 
 ## Example Tasks to Try
 
-Open **http://localhost:5000** and try these language tasks:
+Open **http://localhost:8000** and try these language tasks:
 
 ```
 Translate 'Good morning' to French
@@ -297,13 +297,27 @@ docker exec simple-ollama ollama list
 - This is intentional for the demo
 - To enable real translation, integrate a translation API in `simple-server.py`
 
-**Can't access localhost:5000:**
+**Can't access localhost:8000:**
 ```bash
 # Check containers are running
 docker ps | grep simple
 
 # Check logs
 docker compose -f docker-compose-simple.yml logs web
+```
+
+## Cleanup
+
+To stop the demo (keeps Ollama image and model for next time):
+
+```bash
+docker compose -f docker-compose-simple.yml down
+```
+
+To completely remove everything (including model - will need to re-download):
+
+```bash
+docker compose -f docker-compose-simple.yml down -v
 ```
 
 ## What's Next?
@@ -399,6 +413,6 @@ MIT License - Free for educational and commercial use
 ./run-simple.sh
 ```
 
-Then open **http://localhost:5000** and watch the AI agent work!
+Then open **http://localhost:8000** and watch the AI agent work!
 
 Questions? Read `SIMPLE-README.md` for more details or check out the advanced system in `README-ADVANCED.md`.
