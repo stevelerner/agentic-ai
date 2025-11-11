@@ -228,9 +228,11 @@ Think step by step and use tools when helpful."""
                     "llm_metrics": metrics,
                     "tool_duration_ms": tool_duration_ms,
                     "context": {
-                        "phase": "ReAct: Reasoning → Acting",
-                        "location": "SimpleAgent.run() → call_ollama() → execute_tool()",
-                        "narrative": f"Agent analyzed the query and decided to call {tool_name}. The LLM generated a JSON tool call, which was parsed and executed. The tool result will be fed back to the LLM for the next reasoning step."
+                        "phase": "ReAct Pattern: Reasoning → Acting",
+                        "file": "simple-server.py",
+                        "line": "207-219",
+                        "function": "SimpleAgent.run() → call_ollama() → execute_tool()",
+                        "narrative": f"Agent analyzed the query and decided to call {tool_name}. The LLM (line 208) generated a JSON tool call, which was parsed (line 213) and executed (line 219). The tool result will be fed back to the LLM for the next reasoning step."
                     }
                 })
                 
@@ -254,9 +256,11 @@ Think step by step and use tools when helpful."""
                         "model": self.model
                     },
                     "context": {
-                        "phase": "ReAct: Final Response",
-                        "location": "SimpleAgent.run() → call_ollama()",
-                        "narrative": f"Agent completed its reasoning loop after {iteration} iteration(s). The LLM determined it had sufficient information from tool results to provide a final answer to the user. Total conversation included {len(messages)} messages exchanged with the LLM."
+                        "phase": "ReAct Pattern: Final Response",
+                        "file": "simple-server.py",
+                        "line": "208",
+                        "function": "SimpleAgent.run() → call_ollama()",
+                        "narrative": f"Agent completed its reasoning loop after {iteration} iteration(s). The LLM (line 208) determined it had sufficient information from tool results to provide a final answer to the user. Total conversation included {len(messages)} messages exchanged with the LLM."
                     }
                 })
                 return trace
@@ -272,9 +276,11 @@ Think step by step and use tools when helpful."""
                 "model": self.model
             },
             "context": {
-                "phase": "ReAct: Iteration Limit",
-                "location": "SimpleAgent.run()",
-                "narrative": f"Agent reached the maximum iteration limit of {max_iterations} steps without completing. This safety mechanism prevents infinite loops. Consider increasing max_iterations or simplifying the query."
+                "phase": "ReAct Pattern: Iteration Limit Reached",
+                "file": "simple-server.py",
+                "line": "206",
+                "function": "SimpleAgent.run()",
+                "narrative": f"Agent reached the maximum iteration limit of {max_iterations} steps (configured at line 178) without completing. This safety mechanism prevents infinite loops. Consider increasing max_iterations or simplifying the query."
             }
         })
         return trace

@@ -439,9 +439,11 @@
                 if (item.type === 'tool_call') {
                     const contextHtml = item.context ? `
                         <div class="context-info">
-                            <div class="context-title">📍 ${item.context.phase}</div>
+                            <div class="context-title">${item.context.phase}</div>
                             <div class="context-description">
-                                <strong>Code:</strong> <span class="code-reference">${item.context.location}</span><br/>
+                                <strong>File:</strong> <span class="code-reference">${item.context.file}</span><br/>
+                                <strong>Line:</strong> <span class="code-reference">${item.context.line}</span><br/>
+                                <strong>Function:</strong> <span class="code-reference">${item.context.function}</span><br/>
                                 ${item.context.narrative}
                             </div>
                         </div>
@@ -472,7 +474,7 @@
                         <span class="iteration-badge">Step ${item.iteration}</span>
                         ${contextHtml}
                         <div class="tool-call">
-                            <div class="tool-name">🛠️ Tool: ${item.tool}</div>
+                            <div class="tool-name">Tool: ${item.tool}</div>
                             <div class="tool-args">
                                 Arguments: ${JSON.stringify(item.arguments, null, 2)}
                             </div>
@@ -485,9 +487,11 @@
                 } else if (item.type === 'final_answer') {
                     const contextHtml = item.context ? `
                         <div class="context-info">
-                            <div class="context-title">📍 ${item.context.phase}</div>
+                            <div class="context-title">${item.context.phase}</div>
                             <div class="context-description">
-                                <strong>Code:</strong> <span class="code-reference">${item.context.location}</span><br/>
+                                <strong>File:</strong> <span class="code-reference">${item.context.file}</span><br/>
+                                <strong>Line:</strong> <span class="code-reference">${item.context.line}</span><br/>
+                                <strong>Function:</strong> <span class="code-reference">${item.context.function}</span><br/>
                                 ${item.context.narrative}
                             </div>
                         </div>
@@ -495,7 +499,7 @@
 
                     const summaryHtml = item.summary ? `
                         <div class="summary-metrics">
-                            <div class="summary-title">📊 Execution Summary</div>
+                            <div class="summary-title">Execution Summary</div>
                             <div class="metrics">
                                 <div class="metric">
                                     <span class="metric-label">Total Tokens:</span>
@@ -517,7 +521,7 @@
                         <span class="iteration-badge">Step ${item.iteration}</span>
                         ${contextHtml}
                         <div class="final-answer">
-                            <div class="final-answer-label">✅ Final Answer</div>
+                            <div class="final-answer-label">Final Answer</div>
                             <div class="final-answer-content">${formatText(item.content)}</div>
                             ${summaryHtml}
                         </div>
