@@ -11,12 +11,13 @@ ollama==0.1.6
 # Web search
 duckduckgo-search==4.4.0
 
-# Memory & embeddings
-chromadb==0.4.22
-sentence-transformers==2.3.1
+# Memory & embeddings (optional - not required for basic functionality)
+# Uncomment and install build-essential in Dockerfile to enable:
+# chromadb==0.4.22
+# sentence-transformers==2.3.1
 
 # Utilities
-httpx==0.26.0
+httpx>=0.25.2,<0.26.0
 aiofiles==23.2.1
 python-dotenv==1.0.1
 rich==13.7.0

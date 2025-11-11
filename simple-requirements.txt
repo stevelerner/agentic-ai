@@ -1,0 +1,3 @@
+# Minimal dependencies for simple agent
+requests==2.31.0
+
