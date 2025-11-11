@@ -16,10 +16,11 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            font-size: 14px;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -30,12 +31,12 @@
         }
 
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             margin-bottom: 10px;
         }
 
         .header p {
-            font-size: 1.1rem;
+            font-size: 1rem;
             opacity: 0.9;
         }
 
@@ -242,6 +243,36 @@
             margin-bottom: 10px;
         }
 
+        .context-info {
+            background: #e8f4f8;
+            border-left: 4px solid #0066cc;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+
+        .context-title {
+            font-weight: 600;
+            color: #0066cc;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .context-description {
+            color: #495057;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .code-reference {
+            background: #f8f9fa;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #0066cc;
+        }
+
         .final-answer {
             background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
             border: 2px solid #667eea;
@@ -254,7 +285,7 @@
             font-weight: 600;
             color: #667eea;
             margin-bottom: 10px;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .final-answer-content {
@@ -406,6 +437,16 @@
                 traceItem.className = 'trace-item';
 
                 if (item.type === 'tool_call') {
+                    const contextHtml = item.context ? `
+                        <div class="context-info">
+                            <div class="context-title">📍 ${item.context.phase}</div>
+                            <div class="context-description">
+                                <strong>Code:</strong> <span class="code-reference">${item.context.location}</span><br/>
+                                ${item.context.narrative}
+                            </div>
+                        </div>
+                    ` : '';
+
                     const metricsHtml = item.llm_metrics ? `
                         <div class="metrics">
                             <div class="metric">
@@ -429,6 +470,7 @@
 
                     traceItem.innerHTML = `
                         <span class="iteration-badge">Step ${item.iteration}</span>
+                        ${contextHtml}
                         <div class="tool-call">
                             <div class="tool-name">🛠️ Tool: ${item.tool}</div>
                             <div class="tool-args">
@@ -441,6 +483,16 @@
                         </div>
                     `;
                 } else if (item.type === 'final_answer') {
+                    const contextHtml = item.context ? `
+                        <div class="context-info">
+                            <div class="context-title">📍 ${item.context.phase}</div>
+                            <div class="context-description">
+                                <strong>Code:</strong> <span class="code-reference">${item.context.location}</span><br/>
+                                ${item.context.narrative}
+                            </div>
+                        </div>
+                    ` : '';
+
                     const summaryHtml = item.summary ? `
                         <div class="summary-metrics">
                             <div class="summary-title">📊 Execution Summary</div>
@@ -463,6 +515,7 @@
 
                     traceItem.innerHTML = `
                         <span class="iteration-badge">Step ${item.iteration}</span>
+                        ${contextHtml}
                         <div class="final-answer">
                             <div class="final-answer-label">✅ Final Answer</div>
                             <div class="final-answer-content">${formatText(item.content)}</div>

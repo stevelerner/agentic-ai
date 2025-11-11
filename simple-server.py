@@ -226,7 +226,12 @@ Think step by step and use tools when helpful."""
                     "arguments": arguments,
                     "result": result,
                     "llm_metrics": metrics,
-                    "tool_duration_ms": tool_duration_ms
+                    "tool_duration_ms": tool_duration_ms,
+                    "context": {
+                        "phase": "ReAct: Reasoning → Acting",
+                        "location": "SimpleAgent.run() → call_ollama() → execute_tool()",
+                        "narrative": f"Agent analyzed the query and decided to call {tool_name}. The LLM generated a JSON tool call, which was parsed and executed. The tool result will be fed back to the LLM for the next reasoning step."
+                    }
                 })
                 
                 # OBSERVING: Add tool result to conversation
@@ -247,6 +252,11 @@ Think step by step and use tools when helpful."""
                         "total_tokens": total_tokens,
                         "total_time_ms": round(total_time_ms, 2),
                         "model": self.model
+                    },
+                    "context": {
+                        "phase": "ReAct: Final Response",
+                        "location": "SimpleAgent.run() → call_ollama()",
+                        "narrative": f"Agent completed its reasoning loop after {iteration} iteration(s). The LLM determined it had sufficient information from tool results to provide a final answer to the user. Total conversation included {len(messages)} messages exchanged with the LLM."
                     }
                 })
                 return trace
@@ -260,6 +270,11 @@ Think step by step and use tools when helpful."""
                 "total_tokens": total_tokens,
                 "total_time_ms": round(total_time_ms, 2),
                 "model": self.model
+            },
+            "context": {
+                "phase": "ReAct: Iteration Limit",
+                "location": "SimpleAgent.run()",
+                "narrative": f"Agent reached the maximum iteration limit of {max_iterations} steps without completing. This safety mechanism prevents infinite loops. Consider increasing max_iterations or simplifying the query."
             }
         })
         return trace
