@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI Demo - Multi-Agent Orchestration</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Agentic AI System</h1>
+            <p class="subtitle">Multi-Agent Orchestration Demo</p>
+            <div class="status-bar">
+                <span class="status-indicator" id="connection-status">●</span>
+                <span id="status-text">Connected</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="chat-container">
+                <div class="agents-panel">
+                    <h3>Active Agents</h3>
+                    <div class="agent-list">
+                        <div class="agent-card" data-agent="planner">
+                            <div class="agent-icon">📋</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Planner</div>
+                                <div class="agent-status">Ready</div>
+                            </div>
+                        </div>
+                        <div class="agent-card" data-agent="researcher">
+                            <div class="agent-icon">🔍</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Researcher</div>
+                                <div class="agent-status">Ready</div>
+                            </div>
+                        </div>
+                        <div class="agent-card" data-agent="analyst">
+                            <div class="agent-icon">📊</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Analyst</div>
+                                <div class="agent-status">Ready</div>
+                            </div>
+                        </div>
+                        <div class="agent-card" data-agent="writer">
+                            <div class="agent-icon">✍️</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Writer</div>
+                                <div class="agent-status">Ready</div>
+                            </div>
+                        </div>
+                        <div class="agent-card" data-agent="coder">
+                            <div class="agent-icon">💻</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Coder</div>
+                                <div class="agent-status">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-prompts">
+                        <h4>Example Tasks:</h4>
+                        <button class="example-btn" data-prompt="Research the latest trends in AI agents and write a comprehensive report with sources">
+                            📚 Research AI Agents
+                        </button>
+                        <button class="example-btn" data-prompt="Explain quantum computing concepts and create a beginner-friendly guide">
+                            🔬 Quantum Computing Guide
+                        </button>
+                        <button class="example-btn" data-prompt="Generate Python code for a REST API with authentication, including tests and documentation">
+                            💻 Generate REST API
+                        </button>
+                        <button class="example-btn" data-prompt="Analyze the pros and cons of different database types for a high-traffic web application">
+                            📊 Database Analysis
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-main">
+                    <div class="messages" id="messages">
+                        <div class="welcome-message">
+                            <h2>Welcome to Agentic AI Demo</h2>
+                            <p>This system demonstrates modern agentic AI principles:</p>
+                            <ul>
+                                <li><strong>Multi-Agent Collaboration:</strong> Specialized agents work together</li>
+                                <li><strong>Planning & Execution:</strong> Tasks are broken down and executed systematically</li>
+                                <li><strong>Tool Use:</strong> Agents use web search, code execution, and file operations</li>
+                                <li><strong>Reflection:</strong> Agents review and refine their outputs</li>
+                            </ul>
+                            <p>Try one of the example tasks or ask your own question!</p>
+                        </div>
+                    </div>
+
+                    <div class="input-area">
+                        <textarea 
+                            id="user-input" 
+                            placeholder="Describe a task for the agents to collaborate on..."
+                            rows="3"
+                        ></textarea>
+                        <button id="send-btn">Send →</button>
+                    </div>
+                </div>
+
+                <div class="details-panel">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="execution">Execution Log</button>
+                        <button class="tab" data-tab="plan">Plan</button>
+                        <button class="tab" data-tab="tools">Tool Calls</button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="tab-execution">
+                            <div class="execution-log" id="execution-log">
+                                <p class="empty-state">No execution log yet</p>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane" id="tab-plan">
+                            <div class="plan-view" id="plan-view">
+                                <p class="empty-state">No plan yet</p>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane" id="tab-tools">
+                            <div class="tools-view" id="tools-view">
+                                <p class="empty-state">No tool calls yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with ❤️ to demonstrate modern agentic AI principles</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
