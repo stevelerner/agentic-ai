@@ -6,6 +6,7 @@ Demonstrates core agentic AI concepts with a clean web interface.
 """
 
 import json
+import inspect
 from typing import Optional, Dict, Any, List
 from flask import Flask, render_template, request, jsonify, Response
 import requests
@@ -164,13 +165,35 @@ class SimpleAgent:
         return None
     
     def execute_tool(self, tool_name: str, arguments: Dict) -> Any:
-        """Execute a tool and return the result."""
+        """Execute a tool and return the result with proper type conversion."""
         if tool_name not in TOOLS:
             return {"error": f"Unknown tool: {tool_name}"}
         
         try:
             tool_func = TOOLS[tool_name]["function"]
-            result = tool_func(**arguments)
+            
+            # Convert argument types to match function signature
+            sig = inspect.signature(tool_func)
+            converted_args = {}
+            
+            for arg_name, arg_value in arguments.items():
+                if arg_name in sig.parameters:
+                    param = sig.parameters[arg_name]
+                    expected_type = param.annotation
+                    
+                    # Convert to expected type
+                    if expected_type == int and not isinstance(arg_value, int):
+                        converted_args[arg_name] = int(arg_value)
+                    elif expected_type == float and not isinstance(arg_value, float):
+                        converted_args[arg_name] = float(arg_value)
+                    elif expected_type == bool and not isinstance(arg_value, bool):
+                        converted_args[arg_name] = str(arg_value).lower() in ('true', '1', 'yes')
+                    else:
+                        converted_args[arg_name] = arg_value
+                else:
+                    converted_args[arg_name] = arg_value
+            
+            result = tool_func(**converted_args)
             return result
         except Exception as e:
             return {"error": str(e)}
@@ -230,9 +253,9 @@ Think step by step and use tools when helpful."""
                     "context": {
                         "phase": "ReAct Pattern: Reasoning → Acting",
                         "file": "simple-server.py",
-                        "line": "207-219",
+                        "line": "230-242",
                         "function": "SimpleAgent.run() → call_ollama() → execute_tool()",
-                        "narrative": f"Agent analyzed the query and decided to call {tool_name}. The LLM (line 208) generated a JSON tool call, which was parsed (line 213) and executed (line 219). The tool result will be fed back to the LLM for the next reasoning step."
+                        "narrative": f"Agent analyzed the query and decided to call {tool_name}. The LLM (line 230) generated a JSON tool call, which was parsed (line 235) and executed (line 242). Type conversion (line 175-195) ensures string arguments like '2' are converted to int 2. The tool result will be fed back to the LLM for the next reasoning step."
                     }
                 })
                 
@@ -258,9 +281,9 @@ Think step by step and use tools when helpful."""
                     "context": {
                         "phase": "ReAct Pattern: Final Response",
                         "file": "simple-server.py",
-                        "line": "208",
+                        "line": "230",
                         "function": "SimpleAgent.run() → call_ollama()",
-                        "narrative": f"Agent completed its reasoning loop after {iteration} iteration(s). The LLM (line 208) determined it had sufficient information from tool results to provide a final answer to the user. Total conversation included {len(messages)} messages exchanged with the LLM."
+                        "narrative": f"Agent completed its reasoning loop after {iteration} iteration(s). The LLM (line 230) determined it had sufficient information from tool results to provide a final answer to the user. Total conversation included {len(messages)} messages exchanged with the LLM."
                     }
                 })
                 return trace
@@ -278,9 +301,9 @@ Think step by step and use tools when helpful."""
             "context": {
                 "phase": "ReAct Pattern: Iteration Limit Reached",
                 "file": "simple-server.py",
-                "line": "206",
+                "line": "228",
                 "function": "SimpleAgent.run()",
-                "narrative": f"Agent reached the maximum iteration limit of {max_iterations} steps (configured at line 178) without completing. This safety mechanism prevents infinite loops. Consider increasing max_iterations or simplifying the query."
+                "narrative": f"Agent reached the maximum iteration limit of {max_iterations} steps (configured at line 201) without completing. This safety mechanism prevents infinite loops. Consider increasing max_iterations or simplifying the query."
             }
         })
         return trace
