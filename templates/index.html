@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Agentic AI Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #query-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        #query-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #submit-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        #submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .examples {
+            margin-top: 15px;
+        }
+
+        .examples-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .example-chip {
+            padding: 8px 15px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .results-section {
+            padding: 30px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #adb5bd;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .trace-item {
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .iteration-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .tool-call {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .tool-name {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .tool-args {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .tool-result {
+            background: #e7f5ff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .final-answer {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 2px solid #667eea;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        .final-answer-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .final-answer-content {
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Simple Agentic AI</h1>
+            <p>Watch an AI agent reason, use tools, and solve language tasks</p>
+        </div>
+
+        <div class="main-card">
+            <div class="input-section">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="query-input" 
+                        placeholder="Try: Translate 'Hello World' to Spanish"
+                    >
+                    <button id="submit-btn">Ask Agent</button>
+                </div>
+                
+                <div class="examples">
+                    <div class="examples-label">Example tasks:</div>
+                    <div class="example-chips">
+                        <span class="example-chip" data-query="Translate 'Hello, how are you?' to Spanish">Translate to Spanish</span>
+                        <span class="example-chip" data-query="Rewrite 'hey whats up dude' in a formal style">Make text formal</span>
+                        <span class="example-chip" data-query="Summarize: Machine learning is a method of data analysis that automates analytical model building. It is a branch of artificial intelligence based on the idea that systems can learn from data, identify patterns and make decisions with minimal human intervention.">Summarize text</span>
+                        <span class="example-chip" data-query="Translate 'Good morning, have a great day!' to French and save it to greeting.txt">Translate & save</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="results">
+                <div class="empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    <p>Enter a query above to see the agent in action</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Demonstrating ReAct Pattern: Reasoning + Acting with Tools</p>
+        </div>
+    </div>
+
+    <script>
+        const queryInput = document.getElementById('query-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const results = document.getElementById('results');
+
+        // Example chips
+        document.querySelectorAll('.example-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                queryInput.value = chip.dataset.query;
+            });
+        });
+
+        // Submit on Enter
+        queryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitQuery();
+            }
+        });
+
+        submitBtn.addEventListener('click', submitQuery);
+
+        async function submitQuery() {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            // Disable input
+            queryInput.disabled = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Thinking...';
+
+            // Show loading
+            results.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Agent is processing your query...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query }),
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayTrace(data.trace);
+                } else {
+                    results.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                // Re-enable input
+                queryInput.disabled = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Ask Agent';
+            }
+        }
+
+        function displayTrace(trace) {
+            results.innerHTML = '';
+
+            trace.forEach(item => {
+                const traceItem = document.createElement('div');
+                traceItem.className = 'trace-item';
+
+                if (item.type === 'tool_call') {
+                    traceItem.innerHTML = `
+                        <span class="iteration-badge">Step ${item.iteration}</span>
+                        <div class="tool-call">
+                            <div class="tool-name">🛠️ Tool: ${item.tool}</div>
+                            <div class="tool-args">
+                                Arguments: ${JSON.stringify(item.arguments, null, 2)}
+                            </div>
+                            <div class="tool-result">
+                                Result: ${JSON.stringify(item.result, null, 2)}
+                            </div>
+                        </div>
+                    `;
+                } else if (item.type === 'final_answer') {
+                    traceItem.innerHTML = `
+                        <span class="iteration-badge">Step ${item.iteration}</span>
+                        <div class="final-answer">
+                            <div class="final-answer-label">✅ Final Answer</div>
+                            <div class="final-answer-content">${formatText(item.content)}</div>
+                        </div>
+                    `;
+                }
+
+                results.appendChild(traceItem);
+            });
+        }
+
+        function formatText(text) {
+            // Basic formatting
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>');
+        }
+    </script>
+</body>
+</html>
+

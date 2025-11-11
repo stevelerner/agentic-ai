@@ -50,46 +50,51 @@ cd /Volumes/external/code/agentic-ai
 ./run-simple.sh
 ```
 
+Then open your browser to: **http://localhost:5000**
+
 Or step by step:
 
 ```bash
-# 1. Start Ollama
-docker compose -f docker-compose-simple.yml up -d
+# 1. Start both containers (Ollama + Web UI)
+docker compose -f docker-compose-simple.yml up -d --build
 
 # 2. Pull model (one-time, ~4GB)
 docker exec simple-ollama ollama pull llama3.1
 
-# 3. Install Python deps
-pip3 install -r simple-requirements.txt
-
-# 4. Run the agent
-python3 simple-agent.py
+# 3. Open browser
+open http://localhost:5000
 ```
 
 ## Example Interaction
 
+In the beautiful web interface, try:
+
+**Query:** "Translate 'Hello, how are you?' to Spanish"
+
+**Agent Process:**
+
+**Step 1** - Tool Call:
 ```
-You: Calculate (25 * 4) + (100 / 2) and save the result to result.txt
+Tool: translate_text
+Arguments: {
+  "text": "Hello, how are you?",
+  "target_language": "Spanish"
+}
+Result: {
+  "translated": "Hola, ¿cómo estás?"
+}
+```
 
---- Iteration 1 ---
-💭 Agent thinking: I need to calculate this expression first...
-🧮 Tool: calculate(expression='(25 * 4) + (100 / 2)')
-📊 Tool result: {"result": 150.0}
-
---- Iteration 2 ---
-💭 Agent thinking: Now I'll save this to a file...
-💾 Tool: save_file(filename='result.txt', content='Result: 150.0')
-📊 Tool result: {"status": "success"}
-
-✅ Final Answer:
-I calculated the result as 150.0 and saved it to result.txt
+**Step 2** - Final Answer:
+```
+The Spanish translation is: "Hola, ¿cómo estás?"
 ```
 
 The agent autonomously:
-1. Broke down the task
-2. Used calculator tool
-3. Used file-save tool
-4. Provided final answer
+1. Understood you wanted translation
+2. Called the translate tool with correct arguments
+3. Received the result
+4. Provided a clear answer
 
 ## How It Works
 
@@ -120,27 +125,31 @@ def run(self, user_query: str):
 
 This is the core of agentic behavior - autonomous decision making with feedback loops.
 
-### Available Tools
+### Available Tools (Language Focused)
 
-**File:** `simple-agent.py` (lines 15-60)
+**File:** `simple-server.py` (lines 15-80)
 
 ```python
-def web_search(query: str, max_results: int = 3) -> list:
-    """Search the web (mock results for demo)."""
-    return search_results
+def translate_text(text: str, target_language: str) -> dict:
+    """Translate text to Spanish, French, or German."""
+    return {"translated": translated_text}
 
-def calculate(expression: str) -> float:
-    """Evaluate math expressions safely."""
-    return eval(expression)
+def summarize_text(text: str, max_sentences: int = 3) -> dict:
+    """Summarize longer text into key points."""
+    return {"summary": summary_text}
+
+def rewrite_text(text: str, style: str) -> dict:
+    """Rewrite text in formal, casual, or technical style."""
+    return {"rewritten": rewritten_text}
 
 def save_file(filename: str, content: str) -> dict:
     """Save content to a file."""
-    with open(filename, 'w') as f:
+    with open(f"outputs/{filename}", 'w') as f:
         f.write(content)
     return {"status": "success"}
 ```
 
-Tools are just Python functions. The agent decides when to call them.
+Tools are just Python functions. The agent decides when and how to call them.
 
 ### System Prompt
 
@@ -166,16 +175,20 @@ The prompt defines agent behavior and available capabilities.
 
 ## Understanding the Code
 
-The entire implementation is in `simple-agent.py` (~200 lines). Key parts:
+The implementation is in `simple-server.py` (~250 lines). Key parts:
 
-**Lines 15-60:** Tool definitions
+**Lines 15-80:** Tool definitions (language-focused)
 ```python
-def your_tool(args):
-    # Implementation
-    return results
+def translate_text(text, target_language):
+    # Translation implementation
+    return result
+
+def summarize_text(text, max_sentences):
+    # Summarization implementation
+    return result
 ```
 
-**Lines 80-180:** Agent class
+**Lines 90-180:** Agent class
 ```python
 class SimpleAgent:
     def call_ollama()      # Talk to LLM
@@ -184,9 +197,9 @@ class SimpleAgent:
     def run()              # Main ReAct loop
 ```
 
-**Lines 200-250:** Example usage and interactive mode
+**Lines 200-250:** Flask web server + API endpoints
 
-The code is heavily commented - read it to understand exactly how it works!
+The code is well-commented and the web UI makes it easy to see the agent in action!
 
 ## Extending the Agent
 
@@ -231,27 +244,35 @@ class SimpleAgent:
 
 ## Files
 
-- `simple-agent.py` - Complete implementation (200 lines)
-- `docker-compose-simple.yml` - Just Ollama container
-- `simple-requirements.txt` - One dependency: `requests`
+- `simple-server.py` - Agent + web server (250 lines)
+- `templates/index.html` - Beautiful web UI
+- `docker-compose-simple.yml` - Ollama + Web containers
+- `Dockerfile.simple` - Web service container
+- `simple-requirements.txt` - Minimal dependencies
 - `SIMPLE-README.md` - Detailed documentation
 - `run-simple.sh` - One-command setup
 
 ## Example Tasks to Try
 
-After running `python3 simple-agent.py`, try:
+Open **http://localhost:5000** and try these language tasks:
 
 ```
-Calculate 15 * 23 + 100
+Translate 'Good morning' to French
 
-Search for information about ReAct pattern in AI
+Rewrite 'hey whats up' in a formal style
 
-Calculate the area of a circle with radius 5 and save to area.txt
+Summarize this: [paste a long paragraph]
 
-What is 2^10 + 2^20?
+Translate 'Hello world' to Spanish and save it to greeting.txt
+
+Make this more professional: 'wanna grab coffee l8r?'
 ```
 
-Watch how the agent breaks down tasks and uses tools appropriately.
+Watch how the agent:
+- Decides which tool to use
+- Calls tools with correct arguments
+- Processes results
+- Provides clear answers
 
 ## Troubleshooting
 
@@ -272,9 +293,18 @@ docker exec simple-ollama ollama list
 - Try lower temperature (0.1-0.3)
 - Add examples of tool usage to prompt
 
-**Web search returns mock data:**
+**Translation returns mock data:**
 - This is intentional for the demo
-- To enable real search, uncomment the DuckDuckGo code in `simple-agent.py`
+- To enable real translation, integrate a translation API in `simple-server.py`
+
+**Can't access localhost:5000:**
+```bash
+# Check containers are running
+docker ps | grep simple
+
+# Check logs
+docker compose -f docker-compose-simple.yml logs web
+```
 
 ## What's Next?
 
@@ -363,6 +393,12 @@ MIT License - Free for educational and commercial use
 
 ---
 
-**Get started:** Run `./run-simple.sh` and start exploring!
+**Get started:** 
+
+```bash
+./run-simple.sh
+```
+
+Then open **http://localhost:5000** and watch the AI agent work!
 
 Questions? Read `SIMPLE-README.md` for more details or check out the advanced system in `README-ADVANCED.md`.

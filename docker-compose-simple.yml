@@ -1,5 +1,5 @@
 services:
-  # Just Ollama - simple and minimal
+  # Ollama LLM
   ollama:
     image: ollama/ollama:latest
     container_name: simple-ollama
@@ -7,6 +7,21 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+
+  # Web interface
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    container_name: simple-web
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./outputs:/app/outputs
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
 
 volumes:
   ollama_data:

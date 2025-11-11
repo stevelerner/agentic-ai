@@ -14,11 +14,18 @@ fi
 echo "✓ Docker is running"
 echo ""
 
-# Start Ollama
-echo "🚀 Starting Ollama..."
-docker compose -f docker-compose-simple.yml up -d
-echo "✓ Ollama started"
+# Create outputs directory
+mkdir -p outputs
+
+# Start services
+echo "🚀 Starting services..."
+docker compose -f docker-compose-simple.yml up -d --build
+echo "✓ Services started"
 echo ""
+
+# Wait for Ollama
+echo "⏳ Waiting for Ollama to be ready..."
+sleep 5
 
 # Check if model exists
 if ! docker exec simple-ollama ollama list 2>/dev/null | grep -q "llama3.1"; then
@@ -30,19 +37,15 @@ else
 fi
 echo ""
 
-# Install Python dependencies
-echo "📦 Installing Python dependencies..."
-pip3 install -q -r simple-requirements.txt
-echo "✓ Dependencies installed"
-echo ""
-
 echo "======================================="
 echo "✅ Setup complete!"
 echo ""
-echo "Running the agent..."
+echo "🌐 Web UI: http://localhost:5000"
+echo ""
+echo "Press Ctrl+C to stop"
 echo "======================================="
 echo ""
 
-# Run the agent
-python3 simple-agent.py
+# Show logs
+docker compose -f docker-compose-simple.yml logs -f web
 
