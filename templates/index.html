@@ -229,6 +229,59 @@
             font-family: 'Courier New', monospace;
         }
 
+        .conversation-history {
+            margin-top: 15px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .conversation-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .conversation-title:hover {
+            color: #000;
+        }
+
+        .conversation-content {
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .conversation-content.active {
+            display: block;
+        }
+
+        .conversation-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #dee2e6;
+            padding-left: 12px;
+            font-size: 0.8rem;
+            background: white;
+            border-radius: 4px;
+        }
+
+        .conversation-role {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .conversation-tokens {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
         .summary-metrics {
             background: #d1ecf1;
             padding: 15px;
@@ -452,7 +505,15 @@
                     const metricsHtml = item.llm_metrics ? `
                         <div class="metrics">
                             <div class="metric">
-                                <span class="metric-label">LLM Tokens:</span>
+                                <span class="metric-label">Prompt Tokens:</span>
+                                <span class="metric-value">${item.llm_metrics.prompt_tokens}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Completion Tokens:</span>
+                                <span class="metric-value">${item.llm_metrics.completion_tokens}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Total:</span>
                                 <span class="metric-value">${item.llm_metrics.total_tokens}</span>
                             </div>
                             <div class="metric">
@@ -503,16 +564,41 @@
                             <div class="metrics">
                                 <div class="metric">
                                     <span class="metric-label">Total Tokens:</span>
-                                    <span class="metric-value">${item.summary.total_tokens}</span>
+                                    <span class="metric-value">${item.summary.total_tokens.toLocaleString()}</span>
                                 </div>
                                 <div class="metric">
                                     <span class="metric-label">Total Time:</span>
                                     <span class="metric-value">${item.summary.total_time_ms}ms</span>
                                 </div>
                                 <div class="metric">
+                                    <span class="metric-label">Iterations:</span>
+                                    <span class="metric-value">${item.summary.iterations}</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Messages:</span>
+                                    <span class="metric-value">${item.summary.conversation_messages}</span>
+                                </div>
+                                <div class="metric">
                                     <span class="metric-label">Model:</span>
                                     <span class="metric-value">${item.summary.model}</span>
                                 </div>
+                            </div>
+                        </div>
+                    ` : '';
+
+                    const conversationHtml = item.conversation_history && item.conversation_history.length > 0 ? `
+                        <div class="conversation-history">
+                            <div class="conversation-title" onclick="this.nextElementSibling.classList.toggle('active')">
+                                ▶ Full Conversation History (${item.conversation_history.length} messages) - Click to expand
+                            </div>
+                            <div class="conversation-content">
+                                ${item.conversation_history.map((msg, idx) => `
+                                    <div class="conversation-item">
+                                        <div class="conversation-role">${msg.role.toUpperCase()}${msg.tool ? ` (${msg.tool})` : ''}</div>
+                                        <div>${JSON.stringify(msg.content).substring(0, 200)}${JSON.stringify(msg.content).length > 200 ? '...' : ''}</div>
+                                        ${msg.prompt_tokens ? `<div class="conversation-tokens">Prompt: ${msg.prompt_tokens} | Completion: ${msg.completion_tokens} | Total: ${msg.tokens} tokens</div>` : ''}
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
                     ` : '';
@@ -524,6 +610,7 @@
                             <div class="final-answer-label">Final Answer</div>
                             <div class="final-answer-content">${formatText(item.content)}</div>
                             ${summaryHtml}
+                            ${conversationHtml}
                         </div>
                     `;
                 }

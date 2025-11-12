@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Agentic AI Demo - Full Feature Set</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .input-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-group label {
+            font-size: 0.85rem;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .setting-group input[type="range"] {
+            width: 100px;
+        }
+
+        .setting-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .feature-toggles {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: #e8f4f8;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #query-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        #query-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #submit-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #submit-btn:hover {
+            opacity: 0.9;
+        }
+
+        #submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            padding: 20px;
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .session-summary {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .session-summary h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .summary-label {
+            font-size: 0.75rem;
+            color: #666;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .summary-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1976d2;
+        }
+
+        .trace-item {
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .collapsible-header:hover {
+            background: #e9ecef;
+        }
+
+        .collapsible-header .title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .collapsible-header .toggle {
+            font-size: 1.2rem;
+        }
+
+        .collapsible-content {
+            padding: 16px;
+            display: none;
+        }
+
+        .collapsible-content.active {
+            display: block;
+        }
+
+        .iteration-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .phase-badge {
+            display: inline-block;
+            background: #17a2b8;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .context-info {
+            background: #e8f4f8;
+            border-left: 4px solid #0066cc;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+
+        .context-title {
+            font-weight: 600;
+            color: #0066cc;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .context-description {
+            color: #495057;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .code-reference {
+            background: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #0066cc;
+        }
+
+        .tool-call {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .tool-name {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .tool-args, .tool-result {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin: 6px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+
+        .tool-result {
+            background: #e7f5ff;
+        }
+
+        .metrics {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            padding: 8px;
+            background: #fff3cd;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .metric-label {
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            color: #533f03;
+            font-family: 'Courier New', monospace;
+        }
+
+        .reflection {
+            background: #fff8e1;
+            border-left: 4px solid #ffa726;
+            padding: 10px 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+        }
+
+        .reflection-title {
+            font-weight: 600;
+            color: #f57c00;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .thought {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .thought-title {
+            font-weight: 600;
+            color: #7b1fa2;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .planning {
+            background: #e8eaf6;
+            border-left: 4px solid #3f51b5;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .planning-title {
+            font-weight: 600;
+            color: #3f51b5;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .final-answer {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 2px solid #667eea;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .final-answer-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .final-answer-content {
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .summary-metrics {
+            background: #d1ecf1;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            border-left: 4px solid #0c5460;
+        }
+
+        .summary-title {
+            font-weight: 600;
+            color: #0c5460;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .context-usage {
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .context-bar {
+            height: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .context-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            transition: width 0.3s;
+        }
+
+        .conversation-history {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .conversation-item {
+            padding: 6px;
+            margin-bottom: 6px;
+            border-left: 3px solid #dee2e6;
+            padding-left: 10px;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Enhanced Agentic AI Demo</h1>
+            <p>Full observability, planning, reflection, memory & RAG</p>
+        </div>
+
+        <div class="main-card">
+            <div class="input-section">
+                <div class="feature-toggles">
+                    <div class="setting-group">
+                        <input type="checkbox" id="enable-planning" checked>
+                        <label for="enable-planning">Planning</label>
+                    </div>
+                    <div class="setting-group">
+                        <input type="checkbox" id="enable-reflection" checked>
+                        <label for="enable-reflection">Reflection</label>
+                    </div>
+                    <div class="setting-group">
+                        <input type="checkbox" id="enable-memory" checked>
+                        <label for="enable-memory">Memory</label>
+                    </div>
+                    <div class="setting-group">
+                        <input type="checkbox" id="enable-cot" checked>
+                        <label for="enable-cot">Chain-of-Thought</label>
+                    </div>
+                    <div class="setting-group">
+                        <label for="temperature">Temperature:</label>
+                        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.2">
+                        <span id="temp-value">0.2</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="query-input" placeholder="Ask me anything... Try: 'What is the ReAct pattern?' or 'Search for machine learning info'"
+                           onkeypress="if(event.key==='Enter') submitQuery()">
+                    <button id="submit-btn" onclick="submitQuery()">Ask Agent</button>
+                </div>
+
+                <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">
+                    Session ID: <span id="session-id">default</span> | 
+                    <button onclick="clearSession()" style="border: none; background: none; color: #667eea; cursor: pointer; text-decoration: underline;">Clear Memory</button>
+                </div>
+            </div>
+
+            <div id="results" class="results-section"></div>
+        </div>
+    </div>
+
+    <script>
+        const sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+        document.getElementById('session-id').textContent = sessionId;
+
+        document.getElementById('temperature').addEventListener('input', (e) => {
+            document.getElementById('temp-value').textContent = e.target.value;
+        });
+
+        async function submitQuery() {
+            const queryInput = document.getElementById('query-input');
+            const submitBtn = document.getElementById('submit-btn');
+            const results = document.getElementById('results');
+            const query = queryInput.value.trim();
+
+            if (!query) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            results.innerHTML = '<div class="loading"><div class="spinner"></div>Working on it...</div>';
+
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        query: query,
+                        session_id: sessionId,
+                        temperature: parseFloat(document.getElementById('temperature').value),
+                        enable_planning: document.getElementById('enable-planning').checked,
+                        enable_reflection: document.getElementById('enable-reflection').checked,
+                        enable_memory: document.getElementById('enable-memory').checked,
+                        enable_cot: document.getElementById('enable-cot').checked
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    displayResults(data);
+                } else {
+                    results.innerHTML = `<div class="error">Error: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Ask Agent';
+            }
+        }
+
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            // Session Summary
+            if (data.session_summary) {
+                const summaryHtml = `
+                    <div class="session-summary">
+                        <h3>Session Summary</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span class="summary-label">Total Queries</span>
+                                <span class="summary-value">${data.session_summary.total_queries}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Total Tokens</span>
+                                <span class="summary-value">${data.session_summary.total_tokens.toLocaleString()}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Tools Used</span>
+                                <span class="summary-value">${Object.keys(data.session_summary.tools_used || {}).length}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Memory Items</span>
+                                <span class="summary-value">${data.session_summary.memory_items}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                results.insertAdjacentHTML('beforeend', summaryHtml);
+            }
+
+            // Trace
+            data.trace.forEach((item, index) => {
+                const traceItem = document.createElement('div');
+                traceItem.className = 'trace-item';
+
+                if (item.type === 'planning') {
+                    traceItem.innerHTML = createPlanningHTML(item);
+                } else if (item.type === 'thought') {
+                    traceItem.innerHTML = createThoughtHTML(item);
+                } else if (item.type === 'tool_call') {
+                    traceItem.innerHTML = createToolCallHTML(item);
+                } else if (item.type === 'final_answer') {
+                    traceItem.innerHTML = createFinalAnswerHTML(item);
+                }
+
+                results.appendChild(traceItem);
+            });
+
+            // Make collapsibles work
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    content.classList.toggle('active');
+                    const toggle = header.querySelector('.toggle');
+                    toggle.textContent = content.classList.contains('active') ? '−' : '+';
+                });
+            });
+        }
+
+        function createPlanningHTML(item) {
+            return `
+                <div class="collapsible-header">
+                    <div class="title">
+                        <span class="phase-badge">PLANNING</span> Pre-execution Plan
+                    </div>
+                    <div class="toggle">−</div>
+                </div>
+                <div class="collapsible-content active">
+                    <div class="planning">
+                        <div class="planning-title">Agent's Plan</div>
+                        <pre style="white-space: pre-wrap; margin: 0;">${item.plan.content}</pre>
+                    </div>
+                    ${createMetricsHTML(item.metrics)}
+                </div>
+            `;
+        }
+
+        function createThoughtHTML(item) {
+            return `
+                <div class="collapsible-header">
+                    <div class="title">
+                        <span class="iteration-badge">Step ${item.iteration}</span>
+                        <span class="phase-badge">THOUGHT</span> Chain-of-Thought
+                    </div>
+                    <div class="toggle">−</div>
+                </div>
+                <div class="collapsible-content active">
+                    <div class="thought">
+                        <div class="thought-title">Agent's Inner Thoughts</div>
+                        <div>${item.content}</div>
+                    </div>
+                    ${createMetricsHTML(item.metrics)}
+                </div>
+            `;
+        }
+
+        function createToolCallHTML(item) {
+            return `
+                <div class="collapsible-header">
+                    <div class="title">
+                        <span class="iteration-badge">Step ${item.iteration}</span>
+                        <span class="phase-badge">ACTING</span> Tool: ${item.tool}
+                    </div>
+                    <div class="toggle">−</div>
+                </div>
+                <div class="collapsible-content active">
+                    ${item.context ? createContextHTML(item.context) : ''}
+                    <div class="tool-call">
+                        <div class="tool-name">Tool: ${item.tool}</div>
+                        ${item.tool_reasoning ? `<div style="color: #666; font-size: 0.85rem; margin-bottom: 8px; font-style: italic;">${item.tool_reasoning}</div>` : ''}
+                        <div class="tool-args">Arguments:\n${JSON.stringify(item.arguments, null, 2)}</div>
+                        <div class="tool-result">Result:\n${JSON.stringify(item.result, null, 2)}</div>
+                        ${createMetricsHTML(item.llm_metrics, item.tool_duration_ms)}
+                    </div>
+                    ${item.reflection ? createReflectionHTML(item.reflection) : ''}
+                </div>
+            `;
+        }
+
+        function createFinalAnswerHTML(item) {
+            return `
+                <div class="collapsible-header">
+                    <div class="title">
+                        <span class="iteration-badge">Step ${item.iteration}</span>
+                        <span class="phase-badge">FINAL</span> Complete
+                    </div>
+                    <div class="toggle">−</div>
+                </div>
+                <div class="collapsible-content active">
+                    ${item.context ? createContextHTML(item.context) : ''}
+                    <div class="final-answer">
+                        <div class="final-answer-label">Final Answer</div>
+                        <div class="final-answer-content">${formatText(item.content)}</div>
+                    </div>
+                    ${item.summary ? createSummaryHTML(item.summary) : ''}
+                    ${item.context_usage ? createContextUsageHTML(item.context_usage) : ''}
+                    ${item.conversation_history ? createConversationHistoryHTML(item.conversation_history) : ''}
+                </div>
+            `;
+        }
+
+        function createContextHTML(context) {
+            return `
+                <div class="context-info">
+                    <div class="context-title">${context.phase}</div>
+                    <div class="context-description">
+                        <strong>File:</strong> <span class="code-reference">${context.file}</span><br/>
+                        <strong>Line:</strong> <span class="code-reference">${context.line}</span><br/>
+                        <strong>Function:</strong> <span class="code-reference">${context.function}</span><br/>
+                        ${context.narrative}
+                    </div>
+                </div>
+            `;
+        }
+
+        function createMetricsHTML(metrics, toolDuration) {
+            if (!metrics || !metrics.total_tokens) return '';
+            
+            return `
+                <div class="metrics">
+                    <div class="metric">
+                        <span class="metric-label">Prompt Tokens:</span>
+                        <span class="metric-value">${metrics.prompt_tokens}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Completion Tokens:</span>
+                        <span class="metric-value">${metrics.completion_tokens}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total:</span>
+                        <span class="metric-value">${metrics.total_tokens}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">LLM Time:</span>
+                        <span class="metric-value">${metrics.total_duration_ms}ms</span>
+                    </div>
+                    ${toolDuration ? `<div class="metric">
+                        <span class="metric-label">Tool Time:</span>
+                        <span class="metric-value">${toolDuration}ms</span>
+                    </div>` : ''}
+                    <div class="metric">
+                        <span class="metric-label">Cost:</span>
+                        <span class="metric-value">$${metrics.estimated_cost_usd || 0}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Temp:</span>
+                        <span class="metric-value">${metrics.temperature}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Model:</span>
+                        <span class="metric-value">${metrics.model}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createReflectionHTML(reflection) {
+            return `
+                <div class="reflection">
+                    <div class="reflection-title">Agent's Self-Critique</div>
+                    <div>${reflection.critique.content}</div>
+                    <div style="margin-top: 8px; font-size: 0.8rem;">
+                        Success: ${reflection.critique.success ? 'Yes' : 'No'}
+                    </div>
+                    ${createMetricsHTML(reflection.metrics)}
+                </div>
+            `;
+        }
+
+        function createSummaryHTML(summary) {
+            return `
+                <div class="summary-metrics">
+                    <div class="summary-title">Execution Summary</div>
+                    <div class="metrics">
+                        <div class="metric">
+                            <span class="metric-label">Total Tokens:</span>
+                            <span class="metric-value">${summary.total_tokens.toLocaleString()}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Total Time:</span>
+                            <span class="metric-value">${summary.total_time_ms}ms</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Total Cost:</span>
+                            <span class="metric-value">$${summary.total_cost_usd}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Iterations:</span>
+                            <span class="metric-value">${summary.iterations}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Tools:</span>
+                            <span class="metric-value">${summary.tools_used ? summary.tools_used.join(', ') : 'None'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createContextUsageHTML(usage) {
+            const percent = usage.usage_percent;
+            const color = percent < 50 ? '#28a745' : percent < 80 ? '#ffc107' : '#dc3545';
+            
+            return `
+                <div class="context-usage">
+                    <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem;">Context Window Usage</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                        <span>${usage.estimated_tokens} / ${usage.context_window} tokens</span>
+                        <span>${percent}%</span>
+                    </div>
+                    <div class="context-bar">
+                        <div class="context-bar-fill" style="width: ${percent}%; background: ${color};"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createConversationHistoryHTML(history) {
+            if (!history || history.length === 0) return '';
+            
+            return `
+                <div style="margin-top: 12px;">
+                    <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem;">Full Conversation History</div>
+                    <div class="conversation-history">
+                        ${history.map((item, i) => `
+                            <div class="conversation-item">
+                                <strong>${item.role}:</strong> ${JSON.stringify(item.content).slice(0, 100)}... 
+                                (${item.tokens} tokens)
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatText(text) {
+            return text.replace(/\n/g, '<br>');
+        }
+
+        async function clearSession() {
+            if (confirm('Clear session memory?')) {
+                await fetch(`/api/session/${sessionId}`, {method: 'DELETE'});
+                alert('Session memory cleared!');
+            }
+        }
+    </script>
+</body>
+</html>
+

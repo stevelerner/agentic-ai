@@ -132,14 +132,23 @@ class SimpleAgent:
             response.raise_for_status()
             data = response.json()
             
-            # Extract metrics
+            # Enhanced metrics with cost estimation
+            prompt_tokens = data.get("prompt_eval_count", 0)
+            completion_tokens = data.get("eval_count", 0)
+            
             metrics = {
                 "model": data.get("model", self.model),
-                "prompt_tokens": data.get("prompt_eval_count", 0),
-                "completion_tokens": data.get("eval_count", 0),
-                "total_tokens": data.get("prompt_eval_count", 0) + data.get("eval_count", 0),
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": prompt_tokens + completion_tokens,
                 "eval_duration_ms": round(data.get("eval_duration", 0) / 1_000_000, 2),
                 "total_duration_ms": round(data.get("total_duration", 0) / 1_000_000, 2),
+                "temperature": 0.2,
+                # Cost estimation (GPT-3.5-Turbo pricing: $0.0015/1K prompt, $0.002/1K completion)
+                "estimated_cost_usd": round(
+                    (prompt_tokens / 1000) * 0.0015 + (completion_tokens / 1000) * 0.002, 
+                    6
+                ),
             }
             
             return data["message"]["content"], metrics
@@ -198,9 +207,9 @@ class SimpleAgent:
         except Exception as e:
             return {"error": str(e)}
     
-    def run(self, user_query: str, max_iterations: int = 5) -> List[Dict]:
+    def run(self, user_query: str, max_iterations: int = 5) -> Dict:
         """
-        Run agent with ReAct pattern, returning step-by-step trace with metrics.
+        Run agent with ReAct pattern, returning step-by-step trace with full observability.
         """
         system_prompt = """You are a helpful AI assistant specializing in language tasks.
 
@@ -225,12 +234,24 @@ Think step by step and use tools when helpful."""
         trace = []
         total_tokens = 0
         total_time_ms = 0
+        total_cost = 0.0
+        conversation_history = []  # Track full conversation
         
         for iteration in range(1, max_iterations + 1):
             # REASONING: Get LLM response with metrics
             response, metrics = self.call_ollama(messages)
             total_tokens += metrics.get("total_tokens", 0)
             total_time_ms += metrics.get("total_duration_ms", 0)
+            total_cost += metrics.get("estimated_cost_usd", 0)
+            
+            # Track conversation
+            conversation_history.append({
+                "role": "assistant",
+                "content": response,
+                "tokens": metrics.get("total_tokens", 0),
+                "prompt_tokens": metrics.get("prompt_tokens", 0),
+                "completion_tokens": metrics.get("completion_tokens", 0)
+            })
             
             # Check if it's a tool call
             tool_call = self.parse_tool_call(response)
@@ -266,6 +287,14 @@ Think step by step and use tools when helpful."""
                     "content": f"Tool result: {json.dumps(result, indent=2)}"
                 })
                 
+                # Track tool result in conversation history
+                conversation_history.append({
+                    "role": "tool",
+                    "tool": tool_name,
+                    "content": result,
+                    "tokens": 0
+                })
+                
             else:
                 # Final answer
                 trace.append({
@@ -276,37 +305,45 @@ Think step by step and use tools when helpful."""
                     "summary": {
                         "total_tokens": total_tokens,
                         "total_time_ms": round(total_time_ms, 2),
-                        "model": self.model
+                        "total_cost_usd": round(total_cost, 6),
+                        "model": self.model,
+                        "iterations": iteration,
+                        "conversation_messages": len(messages)
                     },
+                    "conversation_history": conversation_history,
                     "context": {
                         "phase": "ReAct Pattern: Final Response",
                         "file": "simple-server.py",
                         "line": "230",
                         "function": "SimpleAgent.run() → call_ollama()",
-                        "narrative": f"Agent completed its reasoning loop after {iteration} iteration(s). The LLM (line 230) determined it had sufficient information from tool results to provide a final answer to the user. Total conversation included {len(messages)} messages exchanged with the LLM."
+                        "narrative": f"Agent completed its reasoning loop after {iteration} iteration(s). The LLM determined it had sufficient information from tool results to provide a final answer to the user. Total conversation included {len(messages)} messages exchanged with the LLM."
                     }
                 })
-                return trace
+                return {"trace": trace}
         
         # Max iterations reached
         trace.append({
             "type": "final_answer",
             "iteration": max_iterations,
-            "content": "Maximum iterations reached.",
+            "content": "Maximum iterations reached without completing the task.",
             "summary": {
                 "total_tokens": total_tokens,
                 "total_time_ms": round(total_time_ms, 2),
-                "model": self.model
+                "total_cost_usd": round(total_cost, 6),
+                "model": self.model,
+                "iterations": max_iterations,
+                "conversation_messages": len(messages)
             },
+            "conversation_history": conversation_history,
             "context": {
                 "phase": "ReAct Pattern: Iteration Limit Reached",
                 "file": "simple-server.py",
                 "line": "228",
                 "function": "SimpleAgent.run()",
-                "narrative": f"Agent reached the maximum iteration limit of {max_iterations} steps (configured at line 201) without completing. This safety mechanism prevents infinite loops. Consider increasing max_iterations or simplifying the query."
+                "narrative": f"Agent reached the maximum iteration limit of {max_iterations} steps. This safety mechanism prevents infinite loops. Consider increasing max_iterations or simplifying the query."
             }
         })
-        return trace
+        return {"trace": trace}
 
 
 # ============================================================================
@@ -329,13 +366,13 @@ def handle_query():
     if not query:
         return jsonify({"error": "No query provided"}), 400
     
-    # Run agent and get trace
-    trace = agent.run(query)
+    # Run agent and get result with full observability
+    result = agent.run(query)
     
     return jsonify({
         "status": "success",
         "query": query,
-        "trace": trace
+        "trace": result["trace"]
     })
 
 @app.route('/api/examples', methods=['GET'])

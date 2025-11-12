@@ -1,8 +1,16 @@
 # Simple Agentic AI Demo
 
-A practical demonstration of core agentic AI principles that you can understand and run in 10 minutes.
+A practical demonstration of core agentic AI principles with **enhanced observability** - see exactly what's happening under the hood.
 
-**Learn by doing:** Single Python file, minimal setup, clear concepts.
+**Current Features:**
+- ✓ **ReAct Pattern**: Reason → Act → Observe loop with full visibility
+- ✓ **Enhanced Observability**: Token breakdown (prompt vs completion), conversation history
+- ✓ **Tool Intelligence**: Automatic type conversion, argument validation
+- ✓ **Per-step Metrics**: Timing, tokens, model for every LLM call
+- ✓ **Language Tools**: Translation, summarization, rewriting, file operations
+- ✓ **Clean Web UI**: Collapsible sections, full transparency
+
+**Learn by doing:** Run in 5 minutes, understand agentic AI through clear examples.
 
 ## What You'll Learn
 
@@ -98,16 +106,18 @@ The agent autonomously:
 
 ## How It Works
 
-### The ReAct Loop
+### The ReAct Loop: Why Multiple Steps?
 
-**File:** `simple-agent.py` (lines 100-150)
+The agent operates in an iterative **Reason → Act → Observe** loop. This is what makes it "agentic" - it can adapt, recover from errors, and try different strategies.
+
+**File:** `simple-server.py` (lines 228-289)
 
 ```python
 def run(self, user_query: str):
     messages = [system_prompt, user_query]
     
     for iteration in range(max_iterations):
-        # 1. REASONING: What should I do?
+        # 1. REASONING: What should I do next?
         response = call_llm(messages)
         
         # 2. Check if agent wants to use a tool
@@ -123,7 +133,43 @@ def run(self, user_query: str):
         return response
 ```
 
-This is the core of agentic behavior - autonomous decision making with feedback loops.
+#### When Does It Iterate Multiple Times?
+
+The agent keeps looping until:
+- ✓ **LLM provides a final answer** (no tool call detected)
+- ⏱️ **Max iterations reached** (safety limit: 5 by default)
+
+#### Real Example: Error Recovery
+
+Query: *"Summarize the US Constitution Preamble"*
+
+- **Step 1**: Agent calls `summarize_text` but forgets `text` argument → Gets error
+- **Step 2**: Agent sees the error, corrects itself, includes the text → Tool succeeds
+- **Step 3**: Agent realizes the tool output wasn't helpful, tries different parameters
+- **Step 4**: Still not working as expected
+- **Step 5**: Agent gives up on the tool and writes answer manually
+
+This self-correction and adaptive behavior is the **core value of agentic AI** - it doesn't just execute one command, it reasons through problems.
+
+#### Why Is This Better Than Single-Step?
+
+Traditional approach:
+```
+User → LLM → One response (if wrong, user must retry)
+```
+
+Agentic approach:
+```
+User → Agent → [Try tool] → [See result] → [Try again] → [Adapt] → Final answer
+```
+
+The agent can:
+1. **Recover from mistakes** (Step 1 → Step 2)
+2. **Try different strategies** (Steps 2-4)
+3. **Fall back gracefully** (Step 5)
+4. **Chain multiple tools** (translate, then save to file)
+
+This is the essence of agentic behavior.
 
 ### Available Tools (Language Focused)
 
@@ -242,27 +288,68 @@ class SimpleAgent:
         messages.append({"role": "system", "content": str(relevant)})
 ```
 
+## Key Features Explained
+
+### Enhanced Observability
+
+**Token Breakdown**: Every step shows prompt vs completion tokens
+```
+Prompt Tokens: 145
+Completion Tokens: 89  
+Total: 234
+```
+
+**Full Conversation History**: Click to expand and see:
+- Every message exchanged with the LLM
+- Token counts per message (prompt + completion)
+- Tool calls and results
+- Complete message flow
+
+**Per-Step Metrics**: Each action shows:
+- LLM Time: How long the model took
+- Tool Time: How long tool execution took
+- Model: Which model was used (llama3.1)
+
+### Tool Intelligence
+
+**Automatic Type Conversion**: 
+```python
+# LLM generates: {"max_sentences": "2"}
+# Agent converts: max_sentences = 2 (int)
+```
+
+**Error Handling**: Clear error messages when tools fail
+
+**Argument Validation**: Ensures correct types before execution
+
+### Code Transparency
+
+Every step shows:
+- **File**: `simple-server.py`
+- **Line**: Exact line number where AI call happens
+- **Function**: Call chain (e.g., `SimpleAgent.run() → call_ollama()`)
+- **Narrative**: Plain English explanation of what happened
+
 ## Files
 
-- `simple-server.py` - Agent + web server (250 lines)
-- `templates/index.html` - Web UI with metrics display
+- `simple-server.py` - Agent + web server (~380 lines)
+- `templates/index.html` - Web UI with observability features
 - `docker-compose-simple.yml` - Ollama + Web containers
 - `Dockerfile.simple` - Web service container
-- `simple-requirements.txt` - Minimal dependencies
-- `SIMPLE-README.md` - Detailed documentation
+- `simple-requirements.txt` - Minimal dependencies (ollama, requests, Flask)
 - `run-simple.sh` - One-command setup
 - `cleanup-simple.sh` - Safe cleanup script
 
 ## Example Tasks to Try
 
-Open **http://localhost:8000** and try these language tasks:
+Open **http://localhost:8000** and try:
 
 ```
-Translate 'Good morning' to French
+Translate 'Hello, how are you?' to Spanish
 
 Rewrite 'hey whats up' in a formal style
 
-Summarize this: [paste a long paragraph]
+Summarize the US Constitution Preamble
 
 Translate 'Hello world' to Spanish and save it to greeting.txt
 
@@ -327,18 +414,69 @@ docker compose -f docker-compose-simple.yml down
 docker compose -f docker-compose-simple.yml down -v
 ```
 
-## What's Next?
+## What You'll See
 
-Once you understand this simple agent:
+When you run a query, the UI shows:
 
-1. **Experiment** - Try different queries, add tools
-2. **Read the code** - It's short and well-commented
-3. **Modify prompts** - See how behavior changes
-4. **Build something** - Apply these patterns to your problem
+1. **Each Step** - Collapsible sections for each iteration
+2. **Tool Calls** - Arguments sent and results received
+3. **Token Metrics** - Breakdown of every LLM call
+4. **Timing** - How long each step took
+5. **Code Context** - Where in the code each action happened
+6. **Conversation History** - Full message exchange (expandable)
 
-### Advanced Concepts (Optional)
+### Example: "Translate 'Hello' to Spanish"
 
-Want to explore more? See:
+**Step 1 - Tool Call:**
+```
+Tool: translate_text
+Arguments: {"text": "Hello", "target_language": "Spanish"}
+Result: {"translated": "[Spanish translation of: Hello]"}
+
+Metrics:
+- Prompt Tokens: 145
+- Completion Tokens: 89
+- Total: 234
+- LLM Time: 2543ms
+- Tool Time: 0.03ms
+```
+
+**Step 2 - Final Answer:**
+```
+The Spanish translation is: "Hola"
+
+Summary:
+- Total Tokens: 458
+- Total Time: 4,832ms
+- Iterations: 2
+- Messages: 4
+```
+
+### Extending the Demo
+
+**Add a new tool** (easy):
+```python
+def sentiment_analysis(text: str) -> dict:
+    """Analyze sentiment of text."""
+    # Your implementation
+    return {"sentiment": "positive", "confidence": 0.85}
+
+TOOLS["sentiment_analysis"] = {
+    "function": sentiment_analysis,
+    "description": "Analyze sentiment of text",
+    "parameters": {"text": "str"}
+}
+```
+
+**Adjust agent behavior**: Edit the system prompt in `simple-server.py` (line 205)
+
+**Change temperature**: Modify `SimpleAgent.__init__()` to adjust creativity (default 0.2)
+
+## Advanced Concepts (Optional)
+
+For a more complex multi-agent system with planning, reflection, and RAG, see `README-ADVANCED.md`.
+
+**This simple demo focuses on clarity and understanding. The advanced demo adds:**
 
 - **[README-ADVANCED.md](README-ADVANCED.md)** - Multi-agent orchestration system
 - **[SIMPLE-README.md](SIMPLE-README.md)** - Extended documentation
