@@ -1,6 +1,6 @@
 # Simple Agentic AI Demo
 
-A practical demonstration of core agentic AI principles with **enhanced observability** - see exactly what's happening under the hood.
+> **Designed for macOS with Docker Desktop** - A practical demonstration of core agentic AI principles with enhanced observability.
 
 **Current Features:**
 - ✓ **ReAct Pattern**: Reason → Act → Observe loop with full visibility
@@ -11,6 +11,12 @@ A practical demonstration of core agentic AI principles with **enhanced observab
 - ✓ **Clean Web UI**: Collapsible sections, full transparency
 
 **Learn by doing:** Run in 5 minutes, understand agentic AI through clear examples.
+
+## Requirements
+
+- **macOS** with Docker Desktop installed and running
+- 8GB+ RAM available
+- ~4GB disk space for the LLM model
 
 ## What You'll Learn
 
@@ -199,7 +205,7 @@ Tools are just Python functions. The agent decides when and how to call them.
 
 ### System Prompt
 
-**File:** `simple-agent.py` (lines 120-135)
+**File:** `simple-server.py` (lines 120-135)
 
 ```python
 system_prompt = """You are a helpful AI agent with access to tools.
@@ -339,6 +345,7 @@ Every step shows:
 - `simple-requirements.txt` - Minimal dependencies (ollama, requests, Flask)
 - `run-simple.sh` - One-command setup
 - `cleanup-simple.sh` - Safe cleanup script
+- `SIMPLE-README.md` - Extended documentation
 
 ## Example Tasks to Try
 
@@ -363,6 +370,13 @@ Watch how the agent:
 - Provides clear answers
 
 ## Troubleshooting
+
+**Docker Desktop not running:**
+```bash
+# Make sure Docker Desktop is running on your Mac
+# Check from menu bar or run:
+docker ps
+```
 
 **Ollama not responding:**
 ```bash
@@ -392,6 +406,14 @@ docker ps | grep simple
 
 # Check logs
 docker compose -f docker-compose-simple.yml logs web
+```
+
+**Port already in use:**
+```bash
+# Find what's using port 8000
+sudo lsof -i :8000
+
+# Kill the process or change the port in docker-compose-simple.yml
 ```
 
 ## Cleanup
@@ -452,46 +474,6 @@ Summary:
 - Messages: 4
 ```
 
-### Extending the Demo
-
-**Add a new tool** (easy):
-```python
-def sentiment_analysis(text: str) -> dict:
-    """Analyze sentiment of text."""
-    # Your implementation
-    return {"sentiment": "positive", "confidence": 0.85}
-
-TOOLS["sentiment_analysis"] = {
-    "function": sentiment_analysis,
-    "description": "Analyze sentiment of text",
-    "parameters": {"text": "str"}
-}
-```
-
-**Adjust agent behavior**: Edit the system prompt in `simple-server.py` (line 205)
-
-**Change temperature**: Modify `SimpleAgent.__init__()` to adjust creativity (default 0.2)
-
-## Advanced Concepts (Optional)
-
-For a more complex multi-agent system with planning, reflection, and RAG, see `README-ADVANCED.md`.
-
-**This simple demo focuses on clarity and understanding. The advanced demo adds:**
-
-- **[README-ADVANCED.md](README-ADVANCED.md)** - Multi-agent orchestration system
-- **[SIMPLE-README.md](SIMPLE-README.md)** - Extended documentation
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Deep technical dive
-
-The advanced system adds:
-- 5 specialized agents (Planner, Researcher, Analyst, Writer, Coder)
-- Multi-agent orchestration
-- Web UI with real-time updates
-- RAG (Retrieval-Augmented Generation)
-- Vector embeddings
-- Production architecture
-
-But start here first! Understanding this simple version makes everything else much clearer.
-
 ## Key Concepts Demonstrated
 
 This simple demo teaches you:
@@ -524,8 +506,6 @@ Understand code (1 hr)
 Add custom tools (1 hr)
     ↓
 Modify for your use case (2+ hrs)
-    ↓
-Explore advanced system (optional)
 ```
 
 ## External Resources
@@ -560,4 +540,4 @@ MIT License - Free for educational and commercial use
 
 Then open **http://localhost:8000** and watch the AI agent work!
 
-Questions? Read `SIMPLE-README.md` for more details or check out the advanced system in `README-ADVANCED.md`.
+Questions? Read `SIMPLE-README.md` for more details.
