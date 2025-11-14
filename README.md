@@ -203,6 +203,54 @@ def save_file(filename: str, content: str) -> dict:
 
 Tools are just Python functions. The agent decides when and how to call them.
 
+### Architecture: Tools vs Ollama
+
+**Important:** The tools are **built by the app**, not provided by Ollama.
+
+#### Tools are Custom-Built in the App
+
+All tools are Python functions defined in the application code:
+
+**In `simple-server.py` (lines 21-105):**
+- `translate_text()` - Translation (mock implementation)
+- `summarize_text()` - Text summarization
+- `rewrite_text()` - Style rewriting
+- `save_file()` - File operations
+
+**In `simple-agent.py` (lines 24-84):**
+- `web_search()` - Mock web search
+- `calculate()` - Math evaluation
+- `save_file()` - File operations
+
+These are regular Python functions that you can modify, extend, or replace with real API integrations.
+
+#### Ollama's Role: LLM Inference Only
+
+Ollama is **only used for LLM inference**. It:
+- Generates reasoning and decisions
+- Produces tool calls in JSON format
+- Provides final answers
+
+Ollama does **not** execute tools - it only suggests when to use them.
+
+#### How It Works Together
+
+```
+1. User Query → Agent
+2. Agent → Ollama (LLM) → "I should call translate_text tool"
+3. Agent parses JSON: {"tool": "translate_text", "arguments": {...}}
+4. Agent executes translate_text() locally (Python function)
+5. Agent → Ollama (with tool result) → "The translation is..."
+6. Agent returns final answer
+```
+
+The tools are custom Python functions that the agent calls based on Ollama's decisions. Ollama doesn't know how to execute them - it only suggests when to use them. This separation of concerns is key to the architecture:
+
+- **Ollama**: Handles reasoning and language understanding
+- **Your App**: Handles tool execution and business logic
+
+This means you have full control over what tools are available and how they work.
+
 ### System Prompt
 
 **File:** `simple-server.py` (lines 120-135)
