@@ -5,6 +5,17 @@ echo "🧹 Cleaning up Simple Agentic AI Demo"
 echo "======================================="
 echo ""
 
+# Check Docker before attempting cleanup
+if ! docker info > /dev/null 2>&1; then
+    echo "⚠️  Docker is not running. Skipping cleanup."
+    echo ""
+    echo "Note: Containers may still be running if Docker was stopped while they were active."
+    echo "When Docker is running again, you can manually clean up with:"
+    echo "  docker compose -f docker-compose-simple.yml down"
+    echo ""
+    return 2>/dev/null || exit 0
+fi
+
 # Stop and remove containers
 echo "Stopping containers..."
 docker compose -f docker-compose-simple.yml down

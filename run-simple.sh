@@ -8,7 +8,14 @@ echo ""
 # Check Docker
 if ! docker info > /dev/null 2>&1; then
     echo "❌ Docker is not running. Please start Docker Desktop."
-    exit 1
+    echo ""
+    echo "To start Docker Desktop:"
+    echo "  - Open Docker Desktop application"
+    echo "  - Wait for it to fully start"
+    echo "  - Then run this script again"
+    echo ""
+    # Use return if sourced, exit if executed
+    return 2>/dev/null || exit 0
 fi
 
 echo "✓ Docker is running"
